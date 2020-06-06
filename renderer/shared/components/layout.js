@@ -59,15 +59,7 @@ export default function Layout({
 
   const {t} = useTranslation()
 
-  const [current, send] = useMachine(useDnaLink(), {
-    actions: {
-      onInvalid: () =>
-        addError({
-          title: t('Invalid DNA link'),
-          body: t(`You must provide valid URL including protocol version`),
-        }),
-    },
-  })
+  const [current, send] = useDnaLink()
 
   return (
     <main>

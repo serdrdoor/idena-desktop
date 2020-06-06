@@ -37,23 +37,23 @@ export default class MyApp extends App {
 
 function AppProviders(props) {
   return (
-    <DnaLinkProvider>
-      <SettingsProvider>
-        <AutoUpdateProvider>
-          <NodeProvider>
-            <ChainProvider>
-              <TimingProvider>
-                <EpochProvider>
-                  <IdentityProvider>
-                    <NotificationProvider {...props} />
-                  </IdentityProvider>
-                </EpochProvider>
-              </TimingProvider>
-            </ChainProvider>
-          </NodeProvider>
-        </AutoUpdateProvider>
-      </SettingsProvider>
-    </DnaLinkProvider>
+    <SettingsProvider>
+      <AutoUpdateProvider>
+        <NodeProvider>
+          <ChainProvider>
+            <TimingProvider>
+              <EpochProvider>
+                <IdentityProvider>
+                  <NotificationProvider>
+                    <DnaLinkProvider {...props} />
+                  </NotificationProvider>
+                </IdentityProvider>
+              </EpochProvider>
+            </TimingProvider>
+          </ChainProvider>
+        </NodeProvider>
+      </AutoUpdateProvider>
+    </SettingsProvider>
   )
 }
 

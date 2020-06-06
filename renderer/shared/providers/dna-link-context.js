@@ -1,7 +1,10 @@
 import React from 'react'
 import {Machine, assign} from 'xstate'
 import {log} from 'xstate/lib/actions'
+import {useMachine} from '@xstate/react'
+import {useTranslation} from 'react-i18next'
 import {isValidUrl} from '../utils/dna-link'
+import {useNotificationDispatch} from './notification-context'
 
 const dnaUrlMachine = Machine(
   {
@@ -9,10 +12,7 @@ const dnaUrlMachine = Machine(
     states: {
       checking: {
         invoke: {
-          src: () =>
-            Promise.resolve(
-              `dna://send/v1?address=0x477E32166cd16C1b4909BE783347e705Aef3d5db&amount=12388768768&comment=mycomment`
-            ), // global.ipcRenderer.invoke('CHECK_DNA_LINK'),
+          src: () => global.ipcRenderer.invoke('CHECK_DNA_LINK'),
           onDone: [
             {target: 'empty', actions: ['setUrl', log()], cond: 'isEmptyUrl'},
             {target: 'ready', actions: ['setUrl', log()], cond: 'isValidUrl'},
@@ -69,7 +69,18 @@ const DnaLinkContext = React.createContext()
 
 // eslint-disable-next-line react/prop-types
 export function DnaLinkProvider(props) {
-  return <DnaLinkContext.Provider value={dnaUrlMachine} {...props} />
+  const {addError} = useNotificationDispatch()
+  const {t} = useTranslation()
+  const [current, send, service] = useMachine(dnaUrlMachine, {
+    actions: {
+      onInvalid: () =>
+        addError({
+          title: t('Invalid DNA link'),
+          body: t(`You must provide valid URL including protocol version`),
+        }),
+    },
+  })
+  return <DnaLinkContext.Provider value={[current, send, service]} {...props} />
 }
 
 export function useDnaLink() {
