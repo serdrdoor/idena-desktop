@@ -26,48 +26,14 @@ import {
   sendDna,
   DNA_SEND_CONFIRM_TRESHOLD,
   AlertText,
-  validDnaUrl,
 } from '../utils/dna-link'
 import {Input, FormGroup, Label} from './form'
 import Avatar from './avatar'
 import {Tooltip} from './tooltip'
-import {useNotificationDispatch} from '../providers/notification-context'
 
-export function DnaLinkHandler({children}) {
-  const [dnaUrl, setDnaUrl] = React.useState()
-
-  const {addError} = useNotificationDispatch()
-
+export function DnaSignInDialog({url, onClose, onSigninError}) {
   const {t} = useTranslation()
 
-  React.useEffect(() => {
-    if (dnaUrl && !validDnaUrl(dnaUrl))
-      addError({
-        title: t('Invalid DNA link'),
-        body: t(`You must provide valid URL including protocol version`),
-      })
-  }, [addError, dnaUrl, t])
-
-  React.useEffect(() => {
-    global.ipcRenderer.invoke('CHECK_DNA_LINK').then(setDnaUrl)
-  }, [])
-
-  React.useEffect(() => {
-    const handleDnaLink = (_, e) => setDnaUrl(e)
-    global.ipcRenderer.on('DNA_LINK', handleDnaLink)
-    return () => {
-      global.ipcRenderer.removeListener('DNA_LINK', handleDnaLink)
-    }
-  }, [])
-
-  return validDnaUrl(dnaUrl) &&
-    React.Children.only(children).props.isOpen(dnaUrl)
-    ? React.cloneElement(children, {url: dnaUrl, onHide: () => setDnaUrl(null)})
-    : null
-}
-
-export function DnaSignInDialog({url, onHide, onSigninError}) {
-  const {t} = useTranslation()
   const {address} = useIdentityState()
 
   const {
@@ -97,7 +63,7 @@ export function DnaSignInDialog({url, onHide, onSigninError}) {
   }
 
   return (
-    <DnaDialog show={Boolean(url)} onHide={onHide}>
+    <DnaDialog show onHide={onClose}>
       <DnaDialogTitle>Login confirmation</DnaDialogTitle>
       <DnaDialogSubtitle>
         {t(
@@ -146,7 +112,7 @@ export function DnaSignInDialog({url, onHide, onSigninError}) {
         </DnaDialogDetails>
       </DnaDialogBody>
       <DnaDialogFooter>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant="secondary" onClick={onClose}>
           Cancel
         </Button>
         <Button
@@ -176,7 +142,7 @@ export function DnaSignInDialog({url, onHide, onSigninError}) {
                 global.logger.error(message)
                 if (onSigninError) onSigninError(message)
               })
-              .finally(onHide)
+              .finally(onClose)
           }}
         >
           Proceed to {callbackHostname}
@@ -188,25 +154,26 @@ export function DnaSignInDialog({url, onHide, onSigninError}) {
 
 export function DnaSendDialog({
   url,
-  onHide,
+  onClose,
   onDepositSuccess,
   onDepositError,
   ...props
 }) {
   const {t} = useTranslation()
+
   const {address: from, balance} = useIdentityState()
+
+  const [confirmAmount, setConfirmAmount] = React.useState()
 
   const {address: to, amount, comment} = parseQuery(url)
 
   const shouldConfirmTx = amount / balance > DNA_SEND_CONFIRM_TRESHOLD
 
-  const [confirmAmount, setConfirmAmount] = React.useState()
-
   const areSameAmounts = +confirmAmount === +amount
   const isExceededBalance = +amount > balance
 
   return (
-    <DnaDialog show={Boolean(url)} onHide={onHide} {...props}>
+    <DnaDialog show onHide={onClose} {...props}>
       <DnaDialogTitle>Confirm transfer</DnaDialogTitle>
       <DnaDialogSubtitle>
         {t(
@@ -286,7 +253,7 @@ export function DnaSendDialog({
         )}
       </DnaDialogBody>
       <DnaDialogFooter>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant="secondary" onClick={onClose}>
           {t('Cancel')}
         </Button>
         <Button
@@ -310,7 +277,7 @@ export function DnaSendDialog({
                 global.logger.error(message)
                 if (onDepositError) onDepositError(message)
               })
-              .finally(onHide)
+              .finally(onClose)
           }}
         >
           {t('Confirm')}

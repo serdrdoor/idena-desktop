@@ -3,6 +3,7 @@ import React from 'react'
 import {useRouter} from 'next/router'
 import {useTranslation} from 'react-i18next'
 import {backgrounds, margin} from 'polished'
+import {useMachine} from '@xstate/react'
 import Sidebar from './sidebar'
 import Notifications from './notifications'
 import SyncingApp, {OfflineApp, LoadingApp} from './syncing-app'
@@ -13,7 +14,7 @@ import {shouldStartValidation} from '../../screens/validation/utils'
 import {useIdentityState} from '../providers/identity-context'
 import {addWheelHandler} from '../utils/mouse'
 import {loadPersistentStateValue, persistItem} from '../utils/persist'
-import {DnaSignInDialog, DnaSendDialog, DnaLinkHandler} from './dna-link'
+import {DnaSignInDialog, DnaSendDialog} from './dna-link'
 import {useNotificationDispatch} from '../providers/notification-context'
 import {ValidationToast} from '../../screens/validation/components'
 import {
@@ -24,6 +25,7 @@ import Button from './button'
 import Flex from './flex'
 import {BlockText} from './typo'
 import theme, {rem} from '../theme'
+import {useDnaLink} from '../providers/dna-link-context'
 
 global.getZoomLevel = global.getZoomLevel || {}
 
@@ -50,10 +52,22 @@ export default function Layout({
     }
   }, [zoomLevel])
 
-  const {addError} = useNotificationDispatch()
+  const {addNotification, addError} = useNotificationDispatch()
 
   const {nodeRemoteVersion, mustUpdateNode} = useAutoUpdateState()
   const {updateNode} = useAutoUpdateDispatch()
+
+  const {t} = useTranslation()
+
+  const [current, send] = useMachine(useDnaLink(), {
+    actions: {
+      onInvalid: () =>
+        addError({
+          title: t('Invalid DNA link'),
+          body: t(`You must provide valid URL including protocol version`),
+        }),
+    },
+  })
 
   return (
     <main>
@@ -72,17 +86,38 @@ export default function Layout({
             <NormalApp {...props} />
           )}
 
-          {!debouncedOffline && !loading && (
-            <DnaLinkHandler>
-              <DnaSignInDialog
-                isOpen={url => new URL(url).pathname.includes('signin')}
-                onSigninError={error =>
-                  addError({
-                    title: error,
-                  })
-                }
-              />
-            </DnaLinkHandler>
+          {current.matches('ready') && !debouncedOffline && !loading && (
+            <>
+              {new URL(current.context.url).pathname.includes('signin') && (
+                <DnaSignInDialog
+                  url={current.context.url}
+                  onClose={() => send('CLOSE')}
+                  onSigninError={error =>
+                    addError({
+                      title: error,
+                    })
+                  }
+                />
+              )}
+              {!debouncedSyncing &&
+                new URL(current.context.url).pathname.includes('send') && (
+                  <DnaSendDialog
+                    url={current.context.url}
+                    onClose={() => send('CLOSE')}
+                    onDepositSuccess={hash =>
+                      addNotification({
+                        title: t('Transaction sent'),
+                        body: hash,
+                      })
+                    }
+                    onDepositError={error =>
+                      addError({
+                        title: error,
+                      })
+                    }
+                  />
+                )}
+            </>
           )}
         </>
       )}
@@ -144,8 +179,6 @@ function NormalApp(props) {
     persistItem('validationNotification', 'epoch', newEpoch)
   }, [epoch, validationNotificationEpoch, setValidationNotificationEpoch, t])
 
-  const {addNotification, addError} = useNotificationDispatch()
-
   return (
     <section style={{flex: 1, overflowY: 'auto'}}>
       <div {...props} />
@@ -155,23 +188,6 @@ function NormalApp(props) {
       <Notifications />
 
       <GlobalModals />
-
-      <DnaLinkHandler>
-        <DnaSendDialog
-          isOpen={url => new URL(url).pathname.includes('send')}
-          onDepositSuccess={hash =>
-            addNotification({
-              title: t('Transaction sent'),
-              body: hash,
-            })
-          }
-          onDepositError={error =>
-            addError({
-              title: error,
-            })
-          }
-        />
-      </DnaLinkHandler>
     </section>
   )
 }

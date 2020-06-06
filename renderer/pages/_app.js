@@ -15,6 +15,7 @@ import {AutoUpdateProvider} from '../shared/providers/update-context'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'tui-image-editor/dist/tui-image-editor.css'
+import {DnaLinkProvider} from '../shared/providers/dna-link-context'
 
 export default class MyApp extends App {
   render() {
@@ -36,21 +37,23 @@ export default class MyApp extends App {
 
 function AppProviders(props) {
   return (
-    <SettingsProvider>
-      <AutoUpdateProvider>
-        <NodeProvider>
-          <ChainProvider>
-            <TimingProvider>
-              <EpochProvider>
-                <IdentityProvider>
-                  <NotificationProvider {...props} />
-                </IdentityProvider>
-              </EpochProvider>
-            </TimingProvider>
-          </ChainProvider>
-        </NodeProvider>
-      </AutoUpdateProvider>
-    </SettingsProvider>
+    <DnaLinkProvider>
+      <SettingsProvider>
+        <AutoUpdateProvider>
+          <NodeProvider>
+            <ChainProvider>
+              <TimingProvider>
+                <EpochProvider>
+                  <IdentityProvider>
+                    <NotificationProvider {...props} />
+                  </IdentityProvider>
+                </EpochProvider>
+              </TimingProvider>
+            </ChainProvider>
+          </NodeProvider>
+        </AutoUpdateProvider>
+      </SettingsProvider>
+    </DnaLinkProvider>
   )
 }
 
