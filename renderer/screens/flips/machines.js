@@ -450,6 +450,7 @@ export const flipMasterMachine = Machine(
         words: [],
         translations: [[], []],
       },
+      voted: [],
       images: Array.from({length: 4}),
       originalOrder: DEFAULT_FLIP_ORDER,
       order: DEFAULT_FLIP_ORDER,
@@ -550,9 +551,10 @@ export const flipMasterMachine = Machine(
                               ...keywords,
                               translations: data,
                             }),
-                            showTranslation: ({locale}, {data}) =>
-                              locale.toLowerCase() !== 'en' &&
-                              data.some(t => t.confirmed),
+                            showTranslation: ({voted, locale}, {data}) =>
+                              (locale.toLowerCase() !== 'en' &&
+                                data.some(t => t.confirmed)) ||
+                              voted.length > 0,
                           }),
                           log(),
                         ],
@@ -597,6 +599,22 @@ export const flipMasterMachine = Machine(
                                       )
                                   ),
                                 }),
+                                voted: (
+                                  {keywords: {words}, voted},
+                                  {data: {id, up, wordId}}
+                                ) => {
+                                  if (!up) return voted
+
+                                  const idx = words.findIndex(
+                                    w => w.id === wordId
+                                  )
+                                  return [
+                                    ...voted.slice(0, idx),
+                                    id,
+                                    ...voted.slice(idx + 1),
+                                  ]
+                                },
+                                showTranslation: true,
                               }),
                               log(),
                             ],
@@ -612,7 +630,26 @@ export const flipMasterMachine = Machine(
                           src: 'suggestKeywordTranslation',
                           onDone: {
                             target: 'idle',
-                            actions: [send('REFETCH'), log()],
+                            actions: [
+                              assign({
+                                voted: (
+                                  {keywords: {words}, voted},
+                                  {data: {id, wordId}}
+                                ) => {
+                                  const idx = words.findIndex(
+                                    w => w.id === wordId
+                                  )
+                                  return [
+                                    ...voted.slice(0, idx),
+                                    id,
+                                    ...voted.slice(idx + 1),
+                                  ]
+                                },
+                                showTranslation: true,
+                              }),
+                              send('REFETCH'),
+                              log(),
+                            ],
                           },
                           onError: {
                             target: 'idle',
@@ -833,7 +870,8 @@ export const flipMasterMachine = Machine(
           cb({type: 'PERSISTED', flip: nextFlip})
         }
       },
-      voteForKeywordTranslation: async (_, e) => voteForKeywordTranslation(e),
+      voteForKeywordTranslation: async ({keywords: {words}}, {wordIdx, ...e}) =>
+        voteForKeywordTranslation({wordId: words[wordIdx].id, ...e}),
       suggestKeywordTranslation: async (
         // eslint-disable-next-line no-shadow
         {keywords: {words}, locale},

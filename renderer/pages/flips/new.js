@@ -103,6 +103,7 @@ export default function NewFlipPage() {
     originalOrder,
     order,
     showTranslation,
+    voted,
     isCommunityTranslationsExpanded,
   } = current.context
 
@@ -173,6 +174,7 @@ export default function NewFlipPage() {
                           <FlipKeywordTranslationSwitch
                             keywords={keywords}
                             showTranslation={showTranslation}
+                            voted={voted}
                             locale={i18n.language}
                             onSwitchLocale={() => send('SWITCH_LOCALE')}
                           />
@@ -219,6 +221,8 @@ export default function NewFlipPage() {
               {is('images') && (
                 <FlipEditorStep
                   keywords={keywords ? keywords.words : []}
+                  translations={keywords.translations}
+                  voted={voted}
                   originalOrder={originalOrder}
                   images={images}
                   onChangeImage={(image, currentIndex) =>
@@ -247,6 +251,7 @@ export default function NewFlipPage() {
                 <FlipSubmitStep
                   keywords={keywords}
                   showTranslation={showTranslation}
+                  voted={voted}
                   locale={i18n.language}
                   onSwitchLocale={() => send('SWITCH_LOCALE')}
                   originalOrder={originalOrder}

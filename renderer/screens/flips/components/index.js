@@ -477,6 +477,7 @@ export function FlipStoryStep({children}) {
 export function FlipKeywordTranslationSwitch({
   keywords,
   showTranslation,
+  voted,
   locale,
   onSwitchLocale,
 }) {
@@ -484,12 +485,19 @@ export function FlipKeywordTranslationSwitch({
     (acc, {length}) => acc + length,
     0
   )
+
+  const {words, translations} = keywords
+  const votedTranslations = translations.map((wordTranslations, idx) =>
+    voted[idx]
+      ? wordTranslations.find(t => +t.id === +voted[idx]) || words[idx]
+      : wordTranslations[0] || words[idx]
+  )
   return (
     <Stack spacing="30px">
       <FlipKeywordPair>
         {hasTranslations &&
           showTranslation &&
-          keywords.translations.map(([{id, name, desc}]) => (
+          votedTranslations.map(({id, name, desc}) => (
             <FlipKeyword key={id}>
               <FlipKeywordName>{name}</FlipKeywordName>
               <FlipKeywordDescription>{desc}</FlipKeywordDescription>
@@ -575,6 +583,8 @@ export function FlipStoryAside(props) {
 
 export function FlipEditorStep({
   keywords,
+  translations,
+  voted,
   originalOrder,
   images,
   onChangeImage,
@@ -585,13 +595,17 @@ export function FlipEditorStep({
 
   const [currentIndex, setCurrentIdx] = React.useState(0)
 
+  const votedKeywords = keywords.map((word, idx) =>
+    voted[idx] ? translations[idx].find(({id}) => id === voted[idx]) : word
+  )
+
   return (
     <FlipStep>
       <FlipStepHeader>
         <FlipStepTitle>{t('Select 4 images to tell your story')}</FlipStepTitle>
         <FlipStepSubtitle>
           {t(`Use key words for the story`)}{' '}
-          <Text as="mark">{formatKeywords(keywords)}</Text>{' '}
+          <Text as="mark">{formatKeywords(votedKeywords)}</Text>{' '}
           {t(`and template "Before
           – Something happens – After"`)}
           .
@@ -760,6 +774,7 @@ export function FlipShuffleStep({
 export function FlipSubmitStep({
   keywords,
   showTranslation,
+  voted,
   locale,
   onSwitchLocale,
   originalOrder,
@@ -784,6 +799,7 @@ export function FlipSubmitStep({
               <FlipKeywordTranslationSwitch
                 keywords={keywords}
                 showTranslation={showTranslation}
+                voted={voted}
                 locale={locale}
                 onSwitchLocale={onSwitchLocale}
               />
@@ -982,7 +998,7 @@ export function CommunityTranslations({
               <Stack isInline spacing={2} align="center">
                 <VoteButton
                   icon="upvote"
-                  onClick={() => onVote({id, up: true})}
+                  onClick={() => onVote({id, up: true, wordIdx})}
                 />
                 <Flex
                   align="center"
@@ -1001,7 +1017,7 @@ export function CommunityTranslations({
                   icon="upvote"
                   color="muted"
                   transform="rotate(180deg)"
-                  onClick={() => onVote({id, up: false})}
+                  onClick={() => onVote({id, up: false, wordIdx})}
                 />
               </Stack>
             </Flex>
