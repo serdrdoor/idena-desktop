@@ -9,6 +9,7 @@ import {
   Box,
 } from '@chakra-ui/core'
 import {useTranslation} from 'react-i18next'
+import HideDestructiveElements from '../shared/nondestructive'
 import {
   useIdentityState,
   mapToFriendlyStatus,
@@ -155,101 +156,106 @@ export default function ProfilePage() {
             <Stack isInline spacing={10}>
               <Stack spacing={6} w="md">
                 <UserInlineCard address={address} status={status} h={24} />
-                <UserStatList>
-                  <UserStat>
-                    <UserStatLabel>{t('Address')}</UserStatLabel>
-                    <UserStatValue>{address}</UserStatValue>
-                    <ExternalLink
-                      href={`https://scan.idena.io/address/${address}`}
-                    >
-                      {t('Open in blockhain explorer')}
-                    </ExternalLink>
-                  </UserStat>
+                <HideDestructiveElements>
+                  <UserStatList>
+                    <UserStat>
+                      <UserStatLabel>{t('Address')}</UserStatLabel>
+                      <UserStatValue>{address}</UserStatValue>
+                      <ExternalLink
+                        href={`https://scan.idena.io/address/${address}`}
+                      >
+                        {t('Open in blockhain explorer')}
+                      </ExternalLink>
+                    </UserStat>
 
-                  {status === IdentityStatus.Newbie ? (
-                    <AnnotatedUserStat
-                      annotation={t(
-                        'Solve more than 12 flips to become Verified'
-                      )}
-                      label={t('Status')}
-                      value={mapToFriendlyStatus(status)}
-                    />
-                  ) : (
-                    <SimpleUserStat
-                      label={t('Status')}
-                      value={mapToFriendlyStatus(status)}
-                    />
-                  )}
-
-                  <SimpleUserStat label={t('Balance')} value={toDna(balance)} />
-
-                  {stake > 0 && status === IdentityStatus.Newbie && (
-                    <Stack spacing={4}>
+                    {status === IdentityStatus.Newbie ? (
                       <AnnotatedUserStat
                         annotation={t(
-                          'You need to get Verified status to be able to terminate your identity and withdraw the stake'
+                          'Solve more than 12 flips to become Verified'
+                        )}
+                        label={t('Status')}
+                        value={mapToFriendlyStatus(status)}
+                      />
+                    ) : (
+                      <SimpleUserStat
+                        label={t('Status')}
+                        value={mapToFriendlyStatus(status)}
+                      />
+                    )}
+
+                    <SimpleUserStat
+                      label={t('Balance')}
+                      value={toDna(balance)}
+                    />
+
+                    {stake > 0 && status === IdentityStatus.Newbie && (
+                      <Stack spacing={4}>
+                        <AnnotatedUserStat
+                          annotation={t(
+                            'You need to get Verified status to be able to terminate your identity and withdraw the stake'
+                          )}
+                          label={t('Stake')}
+                          value={toDna(stake * 0.25)}
+                        />
+                        <AnnotatedUserStat
+                          annotation={t(
+                            'You need to get Verified status to get the locked funds into the normal wallet'
+                          )}
+                          label={t('Locked')}
+                          value={toDna(stake * 0.75)}
+                        />
+                      </Stack>
+                    )}
+
+                    {stake > 0 && status !== IdentityStatus.Newbie && (
+                      <AnnotatedUserStat
+                        annotation={t(
+                          'In order to withdraw the stake you have to terminate your identity'
                         )}
                         label={t('Stake')}
-                        value={toDna(stake * 0.25)}
+                        value={toDna(stake)}
                       />
+                    )}
+
+                    {penalty > 0 && (
                       <AnnotatedUserStat
                         annotation={t(
-                          'You need to get Verified status to get the locked funds into the normal wallet'
+                          "Your node was offline more than 1 hour. The penalty will be charged automatically. Once it's fully paid you'll continue to mine coins."
                         )}
-                        label={t('Locked')}
-                        value={toDna(stake * 0.75)}
+                        label={t('Mining penalty')}
+                        value={toDna(penalty)}
                       />
-                    </Stack>
-                  )}
+                    )}
 
-                  {stake > 0 && status !== IdentityStatus.Newbie && (
-                    <AnnotatedUserStat
-                      annotation={t(
-                        'In order to withdraw the stake you have to terminate your identity'
-                      )}
-                      label={t('Stake')}
-                      value={toDna(stake)}
-                    />
-                  )}
+                    {age > 0 && <SimpleUserStat label={t('Age')} value={age} />}
 
-                  {penalty > 0 && (
-                    <AnnotatedUserStat
-                      annotation={t(
-                        "Your node was offline more than 1 hour. The penalty will be charged automatically. Once it's fully paid you'll continue to mine coins."
-                      )}
-                      label={t('Mining penalty')}
-                      value={toDna(penalty)}
-                    />
-                  )}
+                    {epoch && (
+                      <SimpleUserStat
+                        label={t('Next validation')}
+                        value={new Date(epoch.nextValidation).toLocaleString()}
+                      />
+                    )}
 
-                  {age > 0 && <SimpleUserStat label={t('Age')} value={age} />}
-
-                  {epoch && (
-                    <SimpleUserStat
-                      label={t('Next validation')}
-                      value={new Date(epoch.nextValidation).toLocaleString()}
-                    />
-                  )}
-
-                  {totalQualifiedFlips > 0 && (
-                    <AnnotatedUserStat
-                      annotation={t('Total score for all validations')}
-                      label={t('Total score')}
-                    >
-                      <UserStatValue>
-                        {Math.min(totalShortFlipPoints, totalQualifiedFlips)}{' '}
-                        out of {totalQualifiedFlips} (
-                        {toPercent(
-                          Math.min(
-                            totalShortFlipPoints / totalQualifiedFlips,
-                            1
+                    {totalQualifiedFlips > 0 && (
+                      <AnnotatedUserStat
+                        annotation={t('Total score for all validations')}
+                        label={t('Total score')}
+                      >
+                        <UserStatValue>
+                          {Math.min(totalShortFlipPoints, totalQualifiedFlips)}{' '}
+                          out of {totalQualifiedFlips} (
+                          {toPercent(
+                            Math.min(
+                              totalShortFlipPoints / totalQualifiedFlips,
+                              1
+                            )
+                          )}
                           )
-                        )}
-                        )
-                      </UserStatValue>
-                    </AnnotatedUserStat>
-                  )}
-                </UserStatList>
+                        </UserStatValue>
+                      </AnnotatedUserStat>
+                    )}
+                  </UserStatList>
+                </HideDestructiveElements>
 
                 <OnboardingPopover
                   isOpen={isShowingActivateInvitePopover}
@@ -307,89 +313,99 @@ export default function ProfilePage() {
               <Stack spacing={10} w={rem(200)}>
                 <Box minH={62} mt={4}>
                   {address && canMine && (
-                    <ActivateMiningForm
-                      isOnline={online}
-                      delegatee={delegatee}
-                      delegationEpoch={delegationEpoch}
-                    />
+                    <HideDestructiveElements>
+                      <ActivateMiningForm
+                        isOnline={online}
+                        delegatee={delegatee}
+                        delegationEpoch={delegationEpoch}
+                      />
+                    </HideDestructiveElements>
                   )}
                 </Box>
 
-                <Stack spacing={1} align="flex-start">
-                  <IconLink
-                    href="/oracles/new"
-                    icon={<Icon name="oracle" size={5} />}
-                  >
-                    {t('New voting')}
-                  </IconLink>
-                  <IconLink
-                    href="/flips/new"
-                    icon={<Icon name="photo" size={5} />}
-                  >
-                    {t('New flip')}
-                  </IconLink>
-                  <IconLink
-                    href="/contacts/new-invite"
-                    isDisabled={invitesCount === 0}
-                    icon={<Icon name="add-user" size={5} />}
-                  >
-                    {t('Invite')}
-                  </IconLink>
-                  <IconButton2 icon="poo" onClick={onOpenSpoilForm}>
-                    {t('Spoil invite')}
-                  </IconButton2>
-                  <IconButton2
-                    isDisabled={!canTerminate}
-                    icon="delete"
-                    onClick={onOpenKillForm}
-                  >
-                    {t('Terminate')}
-                  </IconButton2>
-                </Stack>
+                <HideDestructiveElements>
+                  <Stack spacing={1} align="flex-start">
+                    <IconLink
+                      href="/oracles/new"
+                      icon={<Icon name="oracle" size={5} />}
+                    >
+                      {t('New voting')}
+                    </IconLink>
+                    <IconLink
+                      href="/flips/new"
+                      icon={<Icon name="photo" size={5} />}
+                    >
+                      {t('New flip')}
+                    </IconLink>
+                    <IconLink
+                      href="/contacts/new-invite"
+                      isDisabled={invitesCount === 0}
+                      icon={<Icon name="add-user" size={5} />}
+                    >
+                      {t('Invite')}
+                    </IconLink>
+                    <IconButton2 icon="poo" onClick={onOpenSpoilForm}>
+                      {t('Spoil invite')}
+                    </IconButton2>
+                    <IconButton2
+                      isDisabled={!canTerminate}
+                      icon="delete"
+                      onClick={onOpenKillForm}
+                    >
+                      {t('Terminate')}
+                    </IconButton2>
+                  </Stack>
+                </HideDestructiveElements>
               </Stack>
             </Stack>
 
-            <KillIdentityDrawer
-              address={address}
-              isOpen={isOpenKillForm}
-              onClose={onCloseKillForm}
-            >
-              <KillForm onSuccess={onCloseKillForm} onFail={onCloseKillForm} />
-            </KillIdentityDrawer>
+            <HideDestructiveElements>
+              <KillIdentityDrawer
+                address={address}
+                isOpen={isOpenKillForm}
+                onClose={onCloseKillForm}
+              >
+                <KillForm
+                  onSuccess={onCloseKillForm}
+                  onFail={onCloseKillForm}
+                />
+              </KillIdentityDrawer>
+            </HideDestructiveElements>
+            <HideDestructiveElements>
+              <SpoilInviteDrawer
+                isOpen={isOpenSpoilForm}
+                onClose={onCloseSpoilForm}
+              >
+                <SpoilInviteForm
+                  onSpoil={async key => {
+                    try {
+                      await callRpc('dna_activateInviteToRandAddr', {key})
 
-            <SpoilInviteDrawer
-              isOpen={isOpenSpoilForm}
-              onClose={onCloseSpoilForm}
-            >
-              <SpoilInviteForm
-                onSpoil={async key => {
-                  try {
-                    await callRpc('dna_activateInviteToRandAddr', {key})
-
-                    toast({
-                      status: 'success',
-                      // eslint-disable-next-line react/display-name
-                      render: () => (
-                        <Toast
-                          title={t('Invitation is successfully spoiled')}
-                        />
-                      ),
-                    })
-                    onCloseSpoilForm()
-                  } catch {
-                    toast({
-                      // eslint-disable-next-line react/display-name
-                      render: () => (
-                        <Toast
-                          title={t('Invitation is missing')}
-                          status="error"
-                        />
-                      ),
-                    })
-                  }
-                }}
-              />
-            </SpoilInviteDrawer>
+                      toast({
+                        status: 'success',
+                        // eslint-disable-next-line react/display-name
+                        render: () => (
+                          <Toast
+                            title={t('Invitation is successfully spoiled')}
+                          />
+                        ),
+                      })
+                      onCloseSpoilForm()
+                    } catch {
+                      toast({
+                        // eslint-disable-next-line react/display-name
+                        render: () => (
+                          <Toast
+                            title={t('Invitation is missing')}
+                            status="error"
+                          />
+                        ),
+                      })
+                    }
+                  }}
+                />
+              </SpoilInviteDrawer>
+            </HideDestructiveElements>
 
             {showValidationResults && (
               <ValidationResultToast epoch={epoch.epoch} />

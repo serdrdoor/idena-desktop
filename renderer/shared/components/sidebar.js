@@ -12,6 +12,7 @@ import {
   Stack,
   Text as ChakraText,
 } from '@chakra-ui/core'
+import HideDestructiveElements from '../nondestructive'
 import {Box, Link, Text} from '.'
 import Flex from './flex'
 import theme, {rem} from '../theme'
@@ -165,42 +166,48 @@ function Nav() {
         <NavItem href="/profile" active icon={<Icon name="profile" size={5} />}>
           {t('My Idena') || nickname}
         </NavItem>
-        <NavItem href="/wallets" icon={<Icon name="wallet" size={5} />}>
-          {t('Wallets')}
-        </NavItem>
-        <NavItem href="/flips/list" icon={<Icon name="gallery" size={5} />}>
-          {t('Flips')}
-        </NavItem>
-        <NavItem href="/contacts" icon={<Icon name="contacts" size={5} />}>
-          {t('Contacts')}
-        </NavItem>
-        <NavItem href="/oracles/list" icon={<Icon name="oracle" w={5} h={5} />}>
-          <Flex flex={1} align="center" justify="space-between">
-            <ChakraText as="span">{t('Oracle voting')}</ChakraText>
-            {todoCount > 0 ? (
-              <Badge
-                bg="blue.500"
-                color="white"
-                fontSize={8}
-                fontWeight={700}
-                textAlign="center"
-                rounded={4}
-                px={1}
-                py="3px"
-                lineHeight="short"
-                minW={4}
-              >
-                {todoCount > 10 ? '10+' : todoCount}
-              </Badge>
-            ) : null}
-          </Flex>
-        </NavItem>
-        <NavItem
-          href="/settings/general"
-          icon={<Icon name="settings" size={5} />}
-        >
-          {t('Settings')}
-        </NavItem>
+
+        <HideDestructiveElements>
+          <NavItem href="/wallets" icon={<Icon name="wallet" size={5} />}>
+            {t('Wallets')}
+          </NavItem>
+          <NavItem href="/flips/list" icon={<Icon name="gallery" size={5} />}>
+            {t('Flips')}
+          </NavItem>
+          <NavItem href="/contacts" icon={<Icon name="contacts" size={5} />}>
+            {t('Contacts')}
+          </NavItem>
+          <NavItem
+            href="/oracles/list"
+            icon={<Icon name="oracle" w={5} h={5} />}
+          >
+            <Flex flex={1} align="center" justify="space-between">
+              <ChakraText as="span">{t('Oracle voting')}</ChakraText>
+              {todoCount > 0 ? (
+                <Badge
+                  bg="blue.500"
+                  color="white"
+                  fontSize={8}
+                  fontWeight={700}
+                  textAlign="center"
+                  rounded={4}
+                  px={1}
+                  py="3px"
+                  lineHeight="short"
+                  minW={4}
+                >
+                  {todoCount > 10 ? '10+' : todoCount}
+                </Badge>
+              ) : null}
+            </Flex>
+          </NavItem>
+          <NavItem
+            href="/settings/general"
+            icon={<Icon name="settings" size={5} />}
+          >
+            {t('Settings')}
+          </NavItem>
+        </HideDestructiveElements>
       </ul>
       <style jsx>{`
         nav {

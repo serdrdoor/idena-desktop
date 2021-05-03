@@ -26,6 +26,7 @@ import {
 import {useTranslation} from 'react-i18next'
 import dayjs from 'dayjs'
 import {useMachine} from '@xstate/react'
+import HideDestructiveElements from '../../shared/nondestructive'
 import {
   Avatar,
   Tooltip,
@@ -359,20 +360,22 @@ export function ValidationResultToast({epoch}) {
         />
       )}
       {current.matches('stopped') && (
-        <Notification
-          pinned
-          type={NotificationType.Info}
-          title={
-            isValidationSucceeded
-              ? t('See your validation rewards in the blockchain explorer')
-              : t('See your validation results in the blockchain explorer')
-          }
-          action={() => {
-            dispatch(true)
-            global.openExternal(url)
-          }}
-          actionName={t('Open')}
-        />
+        <HideDestructiveElements>
+          <Notification
+            pinned
+            type={NotificationType.Info}
+            title={
+              isValidationSucceeded
+                ? t('See your validation rewards in the blockchain explorer')
+                : t('See your validation results in the blockchain explorer')
+            }
+            action={() => {
+              dispatch(true)
+              global.openExternal(url)
+            }}
+            actionName={t('Open')}
+          />
+        </HideDestructiveElements>
       )}
     </Snackbar>
   ) : null

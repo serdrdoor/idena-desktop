@@ -12,6 +12,8 @@ const {
 
 const isDev = require('electron-is-dev')
 
+const allowOLOLOActions = false
+
 const levelup = require('levelup')
 const leveldown = require('leveldown')
 const sub = require('subleveldown')
@@ -34,6 +36,8 @@ process.once('loaded', () => {
   global.loadKeyword = loadKeyword
 
   global.logger = logger
+
+  global.allowOLOLOActions = false
 
   global.isDev = isDev
   global.isTest = process.env.NODE_ENV === 'e2e'

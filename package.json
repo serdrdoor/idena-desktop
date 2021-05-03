@@ -1,7 +1,7 @@
 {
   "name": "idena-desktop",
   "productName": "Idena",
-  "version": "0.0.1",
+  "version": "1.22.3",
   "main": "main/index.js",
   "repository": "idena-network/idena-desktop",
   "license": "MIT",
