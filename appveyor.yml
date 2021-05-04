@@ -2,17 +2,30 @@ version: 1.0.{build}
 branches:
   only:
   - with_hide
-version: 1.0.{build}
 environment:
     nodejs_version: 10
 install:
     # Get the latest stable version of Node.js or io.js
     - ps: Install-Product node $env:nodejs_version
     # install modules
-    - npm ci
-build: on
+    - npm install
+build: off
 platform:
     - x64
 before_package: echo Before package
 test_script:
     - npm run dist
+artifacts:
+    - path: renderer\out\*.exe
+      name: WindowsApp
+deploy:
+    provider: GitHub
+    release: $(APPVEYOR_REPO_TAG_NAME)
+    description: "Automated release from Travis CI with added files from AppVeyor build"
+    auth_token:
+        secure: FclZCFdQUXRI1M8zSdKMTaKd45ZsQ8J4NhpYmMGOBG6kZ14init5b1WmyRajBuFD
+    artifact: WindowsApp, html5_history_dist, hash_history_dist, release-checksums-windows
+    draft: true
+    force_update: true
+    on:
+        appveyor_repo_tag: false
