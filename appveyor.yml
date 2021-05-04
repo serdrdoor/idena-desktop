@@ -16,7 +16,7 @@ before_package: echo Before package
 test_script:
     - npm run dist
 artifacts:
-    - path: renderer\out\*.exe
+    - path: build\binaries\*.exe
       name: WindowsApp
 deploy:
     provider: GitHub

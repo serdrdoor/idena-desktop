@@ -57,6 +57,10 @@
       ],
       "icon": "main/static/icons/icon-512@2x.icns",
       "maintainer": "Idena <info@idena.io> (https://idena.io/)"
+    },
+    "directories": {
+      "buildResources": "resources",
+      "output": "build/binaries"
     }
   },
   "devDependencies": {
